@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -10,29 +11,19 @@ namespace App
         public static void Main()
         {
             string connectionString = GetConnectionString();
-            ILoggerFactory loggerFactory = CreateLoggerFactory();
 
-            var optionsBuilder = new DbContextOptionsBuilder<SchoolContext>();
-            optionsBuilder
-                .UseSqlServer(connectionString)
-                .UseLoggerFactory(loggerFactory)
-                .EnableSensitiveDataLogging();
+            bool useConsoleLogger = true; // IHostingEnvironment.IsDevelopment
 
-            using (var context = new SchoolContext(optionsBuilder.Options))
+            using (var context = new SchoolContext(connectionString, useConsoleLogger))
             {
-                Student student = context.Students.Find(1L);
+                //Student student = context.Students.Find(1L);
+
+                Student student = context.Students
+                    .Include(x => x.FavoriteCourse)
+                    .SingleOrDefault(x => x.Id == 1);
+
+                if (student != null) System.Console.WriteLine($"Student found: {student.Email}");
             }
-        }
-
-        private static ILoggerFactory CreateLoggerFactory()
-        {
-            return LoggerFactory.Create(builder =>
-            {
-                builder
-                    .AddFilter((category, level) =>
-                        category == DbLoggerCategory.Database.Command.Name && level == LogLevel.Information)
-                    .AddConsole();
-            });
         }
 
         private static string GetConnectionString()
