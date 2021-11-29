@@ -14,13 +14,6 @@ namespace App
             using (var context = new SchoolContext(connectionString, true))
             {
                 Student student = context.Students.Find(1L);
-                Course course = student.FavoriteCourse;
-
-                Course course2 = context.Courses.SingleOrDefault(x => x.Id == 2);
-
-                bool boolean = course == course2;
-
-                bool boolean2 = course == Course.Chemistry;
             }
         }
 
