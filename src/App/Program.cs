@@ -10,9 +10,11 @@ namespace App
     {
         public static void Main()
         {
-            string result3 = Execute(x => x.DisenrollStudent(1, 2));
-            string result = Execute(x => x.CheckStudentFavoriteCourse(1, 2));
-            string result2 = Execute(x => x.EnrollStudent(1, 2, Grade.A));
+            string result5 = Execute(x => x.EditPersonalInfo(4, "Carl2", "carl2@gmail.com", 1));
+            //string result4 = Execute(x => x.RegisterStudent("Carl", "carl@gmail.com", 2, Grade.A));
+            //string result3 = Execute(x => x.DisenrollStudent(1, 2));
+            //string result = Execute(x => x.CheckStudentFavoriteCourse(1, 2));
+            //string result2 = Execute(x => x.EnrollStudent(1, 2, Grade.A));
         }
 
         private static string Execute(Func<StudentController, string> func)
