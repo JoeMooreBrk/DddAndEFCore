@@ -10,7 +10,7 @@ namespace App
 {
     public sealed class SchoolContext : DbContext
     {
-        private static readonly Type[] EnumerationTypes = { typeof(Course) };
+        private static readonly Type[] EnumerationTypes = { typeof(Course), typeof(Suffix) };
 
         private readonly string _connectionString;
         private readonly bool _useConsoleLogger;
