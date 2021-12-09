@@ -2,11 +2,16 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace App
 {
     public sealed class SchoolContext : DbContext
     {
+        private static readonly Type[] EnumerationTypes = { typeof(Course) };
+
         private readonly string _connectionString;
         private readonly bool _useConsoleLogger;
 
@@ -49,11 +54,23 @@ namespace App
                 x.Property(p => p.Id).HasColumnName("StudentID");
                 x.Property(p => p.Email)
                     .HasConversion(p => p.Value, p => Email.Create(p).Value);
-                x.Property(p => p.Name);
+                x.OwnsOne(p => p.Name, p =>
+                {
+                    p.Property<long?>("NameSuffixID").HasColumnName("NameSuffixID");
+                    p.Property(pp => pp.First).HasColumnName("FirstName");
+                    p.Property(pp => pp.Last).HasColumnName("LastName");
+                    p.HasOne(pp => pp.Suffix).WithMany().HasForeignKey("NameSuffixID").IsRequired(false);
+                });
                 x.HasOne(p => p.FavoriteCourse).WithMany();
                 x.HasMany(p => p.Enrollments).WithOne(p => p.Student)
                     .OnDelete(DeleteBehavior.Cascade)
                     .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
+            });
+            modelBuilder.Entity<Suffix>(x =>
+            {
+                x.ToTable("Suffix").HasKey(p => p.Id);
+                x.Property(p => p.Id).HasColumnName("SuffixID");
+                x.Property(p => p.Name);
             });
             modelBuilder.Entity<Course>(x =>
             {
@@ -72,14 +89,17 @@ namespace App
             });
         }
 
-        //public override int SaveChanges()
-        //{
-        //    foreach (EntityEntry<Course> course in ChangeTracker.Entries<Course>())
-        //    {
-        //        course.State = EntityState.Unchanged;
-        //    }
+        public override int SaveChanges()
+        {
+            IEnumerable<EntityEntry> enumerationEntries = ChangeTracker.Entries()
+                .Where(x => EnumerationTypes.Contains(x.Entity.GetType()));
 
-        //    return base.SaveChanges();
-        //}
+            foreach (EntityEntry enumerationEntry in enumerationEntries)
+            {
+                enumerationEntry.State = EntityState.Unchanged;
+            }
+
+            return base.SaveChanges();
+        }
     }
 }

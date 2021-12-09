@@ -64,17 +64,33 @@ namespace App
         }
 
         public string RegisterStudent(
-            string name, string email, long favoriteCourseId, Grade favoriteCourseGrade)
+            string firstName, string lastName, long? nameSuffixID, string email, long favoriteCourseId, Grade favoriteCourseGrade)
         {
             Course favoriteCourse = Course.FromId(favoriteCourseId);
             if (favoriteCourse == null)
                 return "Course not found";
 
-            Result<Email> result = Email.Create(email);
-            if (result.IsFailure)
-                return $"Failure creating email: {result.Error}";
+            Suffix suffix = null;
+            if (nameSuffixID.HasValue)
+            {
+                suffix = Suffix.FromId(nameSuffixID.Value);
+                if (suffix == null)
+                    return "Suffix not found";
+            }
 
-            var student = new Student(name, result.Value, favoriteCourse, favoriteCourseGrade);
+            Result<Email> emailResult = Email.Create(email);
+            if (emailResult.IsFailure)
+                return $"Failure creating email: {emailResult.Error}";
+
+            Result<Name> nameResult = Name.Create(firstName, lastName, suffix);
+            if (nameResult.IsFailure)
+                return $"Failure creating name: {nameResult.Error}";
+
+            var student = new Student(
+                nameResult.Value,
+                emailResult.Value,
+                favoriteCourse,
+                favoriteCourseGrade);
             _repository.Save(student);
 
             _context.SaveChanges();
@@ -83,7 +99,7 @@ namespace App
         }
 
         public string EditPersonalInfo(
-            long studentId, string name, string email, long favoriteCourseId)
+            long studentId, string firstName, string lastName, long? nameSuffixID, string email, long favoriteCourseId)
         {
             Student student = _repository.GetById(studentId);
             if (student == null)
@@ -93,17 +109,28 @@ namespace App
             if (favoriteCourse == null)
                 return "Course not found";
 
-            Result<Email> result = Email.Create(email);
-            if (result.IsFailure)
-                return $"Failure creating email: {result.Error}";
+            Suffix suffix = null;
+            if (nameSuffixID.HasValue)
+            {
+                suffix = Suffix.FromId(nameSuffixID.Value);
+                if (suffix == null)
+                    return "Suffix not found";
+            }
 
-            student.Name = name;
-            student.Email = result.Value;
-            student.FavoriteCourse = favoriteCourse;
+            Result<Email> emailResult = Email.Create(email);
+            if (emailResult.IsFailure)
+                return $"Failure creating email: {emailResult.Error}";
+
+            Result<Name> nameResult = Name.Create(firstName, lastName, suffix);
+            if (nameResult.IsFailure)
+                return $"Failure creating name: {nameResult.Error}";
+
+            student.EditPersonalInfo(nameResult.Value, emailResult.Value, favoriteCourse);
 
             _context.SaveChanges();
 
             return "OK";
         }
+
     }
 }

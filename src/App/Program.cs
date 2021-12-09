@@ -10,7 +10,7 @@ namespace App
     {
         public static void Main()
         {
-            string result5 = Execute(x => x.EditPersonalInfo(13, "Carl", "carl3@gmail.com", 1));
+            string result5 = Execute(x => x.EditPersonalInfo(4, "Carl 5", "Carlson 2", 1, "carl3@gmail.com", 2));
             //string result4 = Execute(x => x.RegisterStudent("Carl", "carl@gmail.com", 2, Grade.B));
             //string result3 = Execute(x => x.DisenrollStudent(1, 2));
             //string result = Execute(x => x.CheckStudentFavoriteCourse(1, 2));
